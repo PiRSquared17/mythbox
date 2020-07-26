@@ -791,7 +791,7 @@ class BackendTest(unittest.TestCase):
                Backend('htpc', '127.0.0.1', '6543', False),
                Backend('htpc', '127.0.0.1', '8888', True),
                Backend('htpc', '127.0.0.2', '6543', True),
-               Backend('slave', '127.0.0.1', '6543', True)]
+               Backend('subordinate', '127.0.0.1', '6543', True)]
         
         for i, be1 in enumerate(bes):
             for j, be2 in enumerate(bes):
@@ -801,8 +801,8 @@ class BackendTest(unittest.TestCase):
                     self.assertFalse(be1 == be2)
     
     def test_eq_False_by_type(self):
-        self.assertFalse(Backend('slave', '127.0.0.1', '6543', True) == 'a string')
-        self.assertFalse(Backend('slave', '127.0.0.1', '6543', True) == None)
+        self.assertFalse(Backend('subordinate', '127.0.0.1', '6543', True) == 'a string')
+        self.assertFalse(Backend('subordinate', '127.0.0.1', '6543', True) == None)
 
 
 if __name__ == '__main__':

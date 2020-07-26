@@ -18,12 +18,12 @@ import string
 #errorFont = Font("-adobe-courier-medium-o-normal-*-*-120-*-*-m-*-iso8859-1")
 
 class _QueryPassword(_QueryString):
-    def body(self, master):
+    def body(self, main):
 
-        w = Label(master, text=self.prompt, justify=LEFT)
+        w = Label(main, text=self.prompt, justify=LEFT)
         w.grid(row=0, padx=5, sticky=W)
 
-        self.entry = Entry(master, name="entry",show="*")
+        self.entry = Entry(main, name="entry",show="*")
         self.entry.grid(row=1, padx=5, sticky=W+E)
 
         if self.initialvalue:
@@ -195,7 +195,7 @@ class CList(Frame):
         apply(self._callall,("yview",)+args)
 
 class ProgressBar:
-    def __init__(self, master=None, orientation="horizontal",
+    def __init__(self, main=None, orientation="horizontal",
                  min=0, max=100, width=100, height=18,
                  doLabel=1, appearance="sunken",
                  fillColor="blue", background="gray",
@@ -203,7 +203,7 @@ class ProgressBar:
                  labelText="", labelFormat="%d%%",
                  value=0, bd=2):
         # preserve various values
-        self.master=master
+        self.main=main
         self.orientation=orientation
         self.min=min
         self.max=max
@@ -217,7 +217,7 @@ class ProgressBar:
         self.labelText=labelText
         self.labelFormat=labelFormat
         self.value=value
-        self.frame=Frame(master, relief=appearance, bd=bd)
+        self.frame=Frame(main, relief=appearance, bd=bd)
         self.canvas=Canvas(self.frame, height=height, width=width, bd=0,
                            highlightthickness=0, background=background)
         self.scale=self.canvas.create_rectangle(0, 0, width, height,

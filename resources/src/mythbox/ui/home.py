@@ -190,8 +190,8 @@ class HomeWindow(BaseWindow):
         
     @inject_db
     def dumpBackendInfo(self):
-        backends = [self.db().getMasterBackend()]
-        backends.extend(self.db().getSlaveBackends())
+        backends = [self.db().getMainBackend()]
+        backends.extend(self.db().getSubordinateBackends())
         log.info('Backend info')
         for b in backends:
             log.info('\t' + str(b))
@@ -429,7 +429,7 @@ class HomeWindow(BaseWindow):
         
         def getHostInfo(job):
             commFlagBackend = self.db().toBackend(job.hostname)
-            return [u'', u' %s %s' % (t(m.ON), commFlagBackend.hostname)][commFlagBackend.slave] 
+            return [u'', u' %s %s' % (t(m.ON), commFlagBackend.hostname)][commFlagBackend.subordinate] 
             
         i = 1    
         for j in running:

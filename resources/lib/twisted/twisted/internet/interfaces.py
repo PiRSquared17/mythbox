@@ -501,7 +501,7 @@ class IReactorProcess(Interface):
                     POSIX systems.)
 
         @param usePTY: if true, run this process in a pseudo-terminal.
-                       optionally a tuple of C{(masterfd, slavefd, ttyname)},
+                       optionally a tuple of C{(mainfd, subordinatefd, ttyname)},
                        in which case use those file descriptors.
                        (Not available on all systems.)
 

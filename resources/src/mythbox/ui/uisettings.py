@@ -178,9 +178,9 @@ class SettingsWindow(BaseWindow):
             self.recordingsButton = self.getControl(205) 
             
             # MythTV Settings
-            if hasattr(self.settings, 'master') and self.settings.master:
-                self.setWindowProperty('MasterBackendHostname', '%s / %s' % (self.settings.master.hostname, self.settings.master.ipAddress))
-                self.setWindowProperty('MasterBackendPort', str(self.settings.master.port))
+            if hasattr(self.settings, 'main') and self.settings.main:
+                self.setWindowProperty('MainBackendHostname', '%s / %s' % (self.settings.main.hostname, self.settings.main.ipAddress))
+                self.setWindowProperty('MainBackendPort', str(self.settings.main.port))
             
             self.register(Setting(self.settings, 'streaming_enabled', bool, None, self.getControl(208)))
             self.register(Setting(self.settings, 'paths_recordedprefix', str, ExternalizedSettingValidator(MythSettings.verifyRecordingDirs), self.getControl(205)))
@@ -306,13 +306,13 @@ class SettingsWindow(BaseWindow):
     def testSettings(self):
         try:
             self.settings.verify()
-            self.setWindowProperty('MasterBackendHostname', '%s / %s' % (self.settings.master.hostname, self.settings.master.ipAddress))
-            self.setWindowProperty('MasterBackendPort', str(self.settings.master.port))
+            self.setWindowProperty('MainBackendHostname', '%s / %s' % (self.settings.main.hostname, self.settings.main.ipAddress))
+            self.setWindowProperty('MainBackendPort', str(self.settings.main.port))
             xbmcgui.Dialog().ok(self.t(m.INFO), u'', self.t(m.SETTINGS_OK))
         except SettingsException, ex:
-            self.settings.master = None
-            self.setWindowProperty('MasterBackendHostname', '')
-            self.setWindowProperty('MasterBackendPort', '')
+            self.settings.main = None
+            self.setWindowProperty('MainBackendHostname', '')
+            self.setWindowProperty('MainBackendPort', '')
             xbmcgui.Dialog().ok(self.t(m.ERROR), u'', str(ex))
             
     @window_busy    

@@ -237,7 +237,7 @@ class Deferred:
         """
         Add a pair of callbacks (success and error) to this L{Deferred}.
 
-        These will be executed when the 'master' callback is run.
+        These will be executed when the 'main' callback is run.
         """
         assert callable(callback)
         assert errback == None or callable(errback)

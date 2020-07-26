@@ -283,7 +283,7 @@ class Dialog(object):
          
         example:
           - dialog = xbmcgui.Dialog()
-          - fn = dialog.browse(3, 'XBMC', 'files', '', False, False, 'special://masterprofile/script_data/XBMC Lyrics')
+          - fn = dialog.browse(3, 'XBMC', 'files', '', False, False, 'special://mainprofile/script_data/XBMC Lyrics')
         """
         pass
 

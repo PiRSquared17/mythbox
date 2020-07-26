@@ -25,7 +25,7 @@ class TkConchMenu(Tkinter.Frame):
         ## Standard heading: initialization
         apply(Tkinter.Frame.__init__, (self,) + args, params)
 
-        self.master.title('TkConch')
+        self.main.title('TkConch')
         self.localRemoteVar = Tkinter.StringVar()
         self.localRemoteVar.set('local')
 
@@ -85,7 +85,7 @@ class TkConchMenu(Tkinter.Frame):
         self.grid_rowconfigure(6, weight=1, minsize=64)
         self.grid_columnconfigure(2, weight=1, minsize=2)
 
-        self.master.protocol("WM_DELETE_WINDOW", sys.exit)
+        self.main.protocol("WM_DELETE_WINDOW", sys.exit)
         
 
     def getIdentityFile(self):
@@ -159,8 +159,8 @@ class TkConchMenu(Tkinter.Frame):
             tkMessageBox.showerror('TkConch', 'Missing host or username.')
             finished = 0
         if finished:
-            self.master.quit()
-            self.master.destroy()        
+            self.main.quit()
+            self.main.destroy()        
             if options['log']:
                 realout = sys.stdout
                 log.startLogging(sys.stderr)
@@ -174,8 +174,8 @@ class TkConchMenu(Tkinter.Frame):
             port = int(options['port'] or 22)
             log.msg((host,port))
             reactor.connectTCP(host, port, SSHClientFactory())
-            frame.master.deiconify()
-            frame.master.title('%s@%s - TkConch' % (options['user'], options['host']))
+            frame.main.deiconify()
+            frame.main.title('%s@%s - TkConch' % (options['user'], options['host']))
         else:
             self.focus()
 

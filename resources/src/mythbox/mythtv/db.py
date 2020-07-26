@@ -160,8 +160,8 @@ class MythDatabase(object):
     
     def __init__(self, *args, **kwargs):
         # Static data cached on demand
-        self._master = None
-        self._slaves = None
+        self._main = None
+        self._subordinates = None
         
         if len(args) == 3:
             self.initWithSettings(args[0], args[1], args[2])
@@ -218,21 +218,21 @@ class MythDatabase(object):
             del self.conn
 
     def getBackends(self):
-        backends = [self.getMasterBackend()]
-        backends.extend(self.getSlaveBackends())
+        backends = [self.getMainBackend()]
+        backends.extend(self.getSubordinateBackends())
         return backends
     
     def toBackend(self, hostnameOrIpAddress):
         for b in self.getBackends():
             if hostnameOrIpAddress.lower() in (b.hostname.lower(), b.ipAddress.lower(),):
                 return b
-        master = self.getMasterBackend()
-        log.warn('Host %s could not be mapped to a backend. Returning master backend %s instead.' % (hostnameOrIpAddress, master.hostname))
-        return master
+        main = self.getMainBackend()
+        log.warn('Host %s could not be mapped to a backend. Returning main backend %s instead.' % (hostnameOrIpAddress, main.hostname))
+        return main
             
     @inject_cursor
-    def getMasterBackend(self):
-        if not self._master:
+    def getMainBackend(self):
+        if not self._main:
             sql = """
                 select 
                     a.data as ipaddr,
@@ -243,8 +243,8 @@ class MythDatabase(object):
                     settings b,
                     settings c
                 where 
-                    a.value = 'MasterServerIP' and
-                    b.value = 'MasterServerPort' and
+                    a.value = 'MainServerIP' and
+                    b.value = 'MainServerPort' and
                     c.value = 'BackendServerIP' and
                     c.data  = a.data
                 """
@@ -253,12 +253,12 @@ class MythDatabase(object):
             rows = map(lambda r: self.toDict(self.cursor, r), self.cursor.fetchall())
             from mythbox.mythtv.domain import Backend
             for row in rows:
-                self._master = Backend(row['hostname'], row['ipaddr'], row['port'],  True)
-        return self._master
+                self._main = Backend(row['hostname'], row['ipaddr'], row['port'],  True)
+        return self._main
     
     @inject_cursor
-    def getSlaveBackends(self):
-        if self._slaves is None:
+    def getSubordinateBackends(self):
+        if self._subordinates is None:
             sql = """
                 select  
                     a.data as ipaddr,  
@@ -273,15 +273,15 @@ class MythDatabase(object):
                     b.value = 'BackendServerPort' and
                     a.hostname = b.hostname and
                     c.data != a.data and
-                    c.value = 'MasterServerIP'        
+                    c.value = 'MainServerIP'        
                 """
             self.cursor.execute(sql)
             rows = map(lambda r: self.toDict(self.cursor, r), self.cursor.fetchall())
             from mythbox.mythtv.domain import Backend
-            self._slaves = []
+            self._subordinates = []
             for row in rows:
-                self._slaves.append(Backend(row['hostname'], row['ipaddr'], row['port'],  False))
-        return self._slaves
+                self._subordinates.append(Backend(row['hostname'], row['ipaddr'], row['port'],  False))
+        return self._subordinates
         
     @timed
     @inject_cursor
@@ -1016,11 +1016,11 @@ class OfflineDatabase(MythDatabase):
     def __init__(self, *args, **kwargs):
         pass
  
-    def getMasterBackend(self):
+    def getMainBackend(self):
         from mythbox.mythtv.domain import Backend
         return Backend('localhost', '127.0.0.1', 6543, True)
     
-    def getSlaveBackends(self):
+    def getSubordinateBackends(self):
         return []
     
     def initWithSettings(self, settings, translator, domainCache):
@@ -1030,7 +1030,7 @@ class OfflineDatabase(MythDatabase):
         pass
 
     def toBackend(self, hostnameOrIpAddress):
-        return self.getMasterBackend()
+        return self.getMainBackend()
     
     def getTuners(self):
         return [] # Tuner[]
