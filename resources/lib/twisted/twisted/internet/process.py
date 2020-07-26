@@ -828,24 +828,24 @@ class PTYProcess(abstract.FileDescriptor, _BaseProcess):
         _BaseProcess.__init__(self, proto)
 
         if isinstance(usePTY, (tuple, list)):
-            masterfd, slavefd, ttyname = usePTY
+            mainfd, subordinatefd, ttyname = usePTY
         else:
-            masterfd, slavefd = pty.openpty()
-            ttyname = os.ttyname(slavefd)
+            mainfd, subordinatefd = pty.openpty()
+            ttyname = os.ttyname(subordinatefd)
 
         try:
             self._fork(path, uid, gid, executable, args, environment,
-                       masterfd=masterfd, slavefd=slavefd)
+                       mainfd=mainfd, subordinatefd=subordinatefd)
         except:
             if not isinstance(usePTY, (tuple, list)):
-                os.close(masterfd)
-                os.close(slavefd)
+                os.close(mainfd)
+                os.close(subordinatefd)
             raise
 
         # we are now in parent process:
-        os.close(slavefd)
-        fdesc.setNonBlocking(masterfd)
-        self.fd = masterfd
+        os.close(subordinatefd)
+        fdesc.setNonBlocking(mainfd)
+        self.fd = mainfd
         self.startReading()
         self.connected = 1
         self.status = -1
@@ -855,11 +855,11 @@ class PTYProcess(abstract.FileDescriptor, _BaseProcess):
             log.err()
         registerReapProcessHandler(self.pid, self)
 
-    def _setupChild(self, masterfd, slavefd):
+    def _setupChild(self, mainfd, subordinatefd):
         """
         Setup child process after fork() but before exec().
         """
-        os.close(masterfd)
+        os.close(mainfd)
         if hasattr(termios, 'TIOCNOTTY'):
             try:
                 fd = os.open("/dev/tty", os.O_RDWR | os.O_NOCTTY)
@@ -875,15 +875,15 @@ class PTYProcess(abstract.FileDescriptor, _BaseProcess):
         os.setsid()
 
         if hasattr(termios, 'TIOCSCTTY'):
-            fcntl.ioctl(slavefd, termios.TIOCSCTTY, '')
+            fcntl.ioctl(subordinatefd, termios.TIOCSCTTY, '')
 
         for fd in range(3):
-            if fd != slavefd:
+            if fd != subordinatefd:
                 os.close(fd)
 
-        os.dup2(slavefd, 0) # stdin
-        os.dup2(slavefd, 1) # stdout
-        os.dup2(slavefd, 2) # stderr
+        os.dup2(subordinatefd, 0) # stdin
+        os.dup2(subordinatefd, 1) # stdout
+        os.dup2(subordinatefd, 2) # stderr
 
         for fd in xrange(3, 256):
             try:

@@ -61,32 +61,32 @@ class MythDatabaseTest(unittest.TestCase):
         self.assertTrue(self.db)
 
     def test_toBackend(self):
-        master = self.db.getMasterBackend()
-        self.assertEqual(master, self.db.toBackend(master.hostname))
-        self.assertEqual(master, self.db.toBackend(master.ipAddress))
-        self.assertTrue(master,   self.db.toBackend('bogus'))
-        self.assertEqual(master, self.db.toBackend(master.hostname.upper()))
-        self.assertEqual(master, self.db.toBackend(master.hostname.lower()))
+        main = self.db.getMainBackend()
+        self.assertEqual(main, self.db.toBackend(main.hostname))
+        self.assertEqual(main, self.db.toBackend(main.ipAddress))
+        self.assertTrue(main,   self.db.toBackend('bogus'))
+        self.assertEqual(main, self.db.toBackend(main.hostname.upper()))
+        self.assertEqual(main, self.db.toBackend(main.hostname.lower()))
         
     def test_getBackends(self):
         bes = self.db.getBackends()
         self.assertTrue(len(bes) >= 1)
         
-    def test_getMasterBackend(self):
-        mbe = self.db.getMasterBackend()
+    def test_getMainBackend(self):
+        mbe = self.db.getMainBackend()
         log.debug(mbe)        
         self.assertTrue(mbe.hostname)
         self.assertTrue(mbe.ipAddress)
         self.assertTrue(mbe.port)
-        self.assertTrue(mbe.master)
-        self.assertFalse(mbe.slave)
+        self.assertTrue(mbe.main)
+        self.assertFalse(mbe.subordinate)
     
-    def test_getSlaveBackends(self):
-        slaves = self.db.getSlaveBackends()
-        for slave in slaves:
-            log.debug(slave)
-            self.assertFalse(slave.master)
-            self.assertTrue(slave.slave)
+    def test_getSubordinateBackends(self):
+        subordinates = self.db.getSubordinateBackends()
+        for subordinate in subordinates:
+            log.debug(subordinate)
+            self.assertFalse(subordinate.main)
+            self.assertTrue(subordinate.subordinate)
         
     def test_getChannels(self):
         channels = self.db.getChannels()

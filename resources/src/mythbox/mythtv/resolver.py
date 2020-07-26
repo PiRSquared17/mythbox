@@ -91,7 +91,7 @@ class MythChannelIconResolver(FileResolver):
         @param dest: file to save downloaded chanel icon to
         """
         if channel.getIconPath():
-            # TODO: Can channel icons be requested from slave backend? Replace None with backend hostname 
+            # TODO: Can channel icons be requested from subordinate backend? Replace None with backend hostname 
             #       if this turns out to be true.
             rc = self.conn().transferFile(channel.getIconPath(), dest, None)
             if not rc:

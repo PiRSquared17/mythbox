@@ -368,11 +368,11 @@ def translatePath(path):
     path           : string or unicode - Path to format
      
     *Note, Only useful if you are coding for both Linux and the Xbox.
-           e.g. Converts 'special://masterprofile/script_data' -> '/home/user/XBMC/UserData/script_data'
-           on Linux. Would return 'special://masterprofile/script_data' on the Xbox.
+           e.g. Converts 'special://mainprofile/script_data' -> '/home/user/XBMC/UserData/script_data'
+           on Linux. Would return 'special://mainprofile/script_data' on the Xbox.
      
     example:
-      - fpath = xbmc.translatePath('special://masterprofile/script_data')
+      - fpath = xbmc.translatePath('special://mainprofile/script_data')
     """
     return tempfile.mkdtemp()
 

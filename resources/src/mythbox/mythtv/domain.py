@@ -2034,24 +2034,24 @@ class Job(object):
                 
 class Backend(object):
     
-    def __init__(self, hostname, ipAddress, port, master):
+    def __init__(self, hostname, ipAddress, port, main):
         self.ipAddress = ipAddress
         self.hostname = hostname
         self.port = int(port)
-        self.master = master
-        self.slave = not self.master
+        self.main = main
+        self.subordinate = not self.main
         
     def __repr__(self):
-        return '%s {ip = %s, hostname = %s, port = %s, master = %s}' % (
+        return '%s {ip = %s, hostname = %s, port = %s, main = %s}' % (
             type(self).__name__,
             self.ipAddress,
             self.hostname,
             self.port,
-            self.master)
+            self.main)
         
     def __eq__(self, rhs):
         return isinstance(rhs, Backend) and \
             self.ipAddress == rhs.ipAddress and \
             self.hostname == rhs.hostname and \
             self.port == rhs.port and \
-            self.master == rhs.master
+            self.main == rhs.main

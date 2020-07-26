@@ -212,7 +212,7 @@ class MythSettings(object):
     def verifyMythTVConnectivity(self):
         domainCache = None
         db = MythDatabase(self, self.translator, domainCache)
-        self.master = db.getMasterBackend()
+        self.main = db.getMainBackend()
         
         try:
             from mythbox.mythtv.conn import Connection
@@ -220,7 +220,7 @@ class MythSettings(object):
             session.close()
         except Exception, ex:
             slog.exception(ex)
-            raise SettingsException('Connection to MythTV host %s failed: %s' % (db.getMasterBackend().ipAddress, ex))
+            raise SettingsException('Connection to MythTV host %s failed: %s' % (db.getMainBackend().ipAddress, ex))
     
     def verifyMySQLConnectivity(self):
         try:

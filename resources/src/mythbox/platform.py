@@ -254,7 +254,7 @@ class IOSPlatform(Platform):
         #19:30:47 T:165597184 M: 73052160  NOTICE: Starting XBMC, Platform: Mac OS X (10.4.0 AppleTV2,1). Built on Feb 27 2011 (Git:6ba831d)
         #19:30:47 T:165597184 M: 73052160  NOTICE: special://xbmc/ is mapped to: /Applications/XBMC.frappliance/XBMCData/XBMCHome
         #19:30:47 T:165597184 M: 73052160  NOTICE: special://xbmcbin/ is mapped to: /Applications/XBMC.frappliance/XBMCData/XBMCHome
-        #19:30:47 T:165597184 M: 72990720  NOTICE: special://masterprofile/ is mapped to: /var/mobile/Library/Preferences/XBMC/userdata
+        #19:30:47 T:165597184 M: 72990720  NOTICE: special://mainprofile/ is mapped to: /var/mobile/Library/Preferences/XBMC/userdata
         #19:30:47 T:165597184 M: 72990720  NOTICE: special://home/ is mapped to: /var/mobile/Library/Preferences/XBMC
         #19:30:47 T:165597184 M: 72990720  NOTICE: special://temp/ is mapped to: /var/mobile/Library/Preferences/XBMC/temp
         #19:30:47 T:165597184 M: 72990720  NOTICE: The executable running is: /Applications/XBMC.frappliance/XBMC

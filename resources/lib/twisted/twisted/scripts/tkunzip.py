@@ -29,7 +29,7 @@ from twisted.python import failure, log, zipstream, util, usage, log
 import os.path
 
 class ProgressBar:
-    def __init__(self, master=None, orientation="horizontal",
+    def __init__(self, main=None, orientation="horizontal",
                  min=0, max=100, width=100, height=18,
                  doLabel=1, appearance="sunken",
                  fillColor="blue", background="gray",
@@ -37,7 +37,7 @@ class ProgressBar:
                  labelText="", labelFormat="%d%%",
                  value=0, bd=2):
         # preserve various values
-        self.master=master
+        self.main=main
         self.orientation=orientation
         self.min=min
         self.max=max
@@ -51,7 +51,7 @@ class ProgressBar:
         self.labelText=labelText
         self.labelFormat=labelFormat
         self.value=value
-        self.frame=Frame(master, relief=appearance, bd=bd)
+        self.frame=Frame(main, relief=appearance, bd=bd)
         self.canvas=Canvas(self.frame, height=height, width=width, bd=0,
                            highlightthickness=0, background=background)
         self.scale=self.canvas.create_rectangle(0, 0, width, height,

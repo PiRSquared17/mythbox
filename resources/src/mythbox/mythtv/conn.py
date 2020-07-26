@@ -213,7 +213,7 @@ class ServerException(Exception):
   
 class Connection(object):
     """Connection to MythTV Backend.
-    TODO: Fix quirkiness -- establishes new conn to slave if target backend isn't the master"""
+    TODO: Fix quirkiness -- establishes new conn to subordinate if target backend isn't the main"""
     
     def __init__(self, settings, translator, platform, bus, db=None):
         """
@@ -233,11 +233,11 @@ class Connection(object):
     
     @inject_db    
     def db_init(self):
-        self.master = self.db().getMasterBackend()
+        self.main = self.db().getMainBackend()
         self.cmdSock = self.connect()
 
     @inject_db
-    def connect(self, announce='Playback', slaveBackend=None):
+    def connect(self, announce='Playback', subordinateBackend=None):
         """
         Monitor connections allow backend to shutdown.
         Playback connections prevent backend from shutting down. 
@@ -246,10 +246,10 @@ class Connection(object):
         @return: socket to backend
         """
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        if slaveBackend == None:
-            backend = self.master
+        if subordinateBackend == None:
+            backend = self.main
         else:
-            backend = self.db().toBackend(slaveBackend)
+            backend = self.db().toBackend(subordinateBackend)
             
         s.connect((backend.ipAddress, backend.port))
         
@@ -279,7 +279,7 @@ class Connection(object):
         # TODO: Optimize to static method proteced by a class level lock so only done once
         #       and not multiple times on a flurry of new connection instances on startup
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((self.master.ipAddress, self.master.port))
+        sock.connect((self.main.ipAddress, self.main.port))
         try:
             # induce reject
             reply = self._sendRequest(sock, ['MYTH_PROTO_VERSION %d' % protocol.initVersion])
@@ -345,7 +345,7 @@ class Connection(object):
         @return            : list[reply[], socket] 
         """
         backend = self.db().toBackend(backendHost)
-        s = self.connect(announce=None, slaveBackend=backend.ipAddress)
+        s = self.connect(announce=None, subordinateBackend=backend.ipAddress)
         self._sendMsg(s, self.protocol.buildAnnounceFileTransferCommand('%s' % self.platform.getHostname(),  filePath))
         reply = self._readMsg(s)
         if not self._isOk(reply):
@@ -531,12 +531,12 @@ class Connection(object):
     
     def isTunerRecording(self, tuner):
         command = ['QUERY_RECORDER %d' % tuner.tunerId, 'IS_RECORDING']
-        if tuner.getBackend() == self.master:
+        if tuner.getBackend() == self.main:
             reply = self._sendRequest(self.cmdSock, command)
             return reply[0] == '1'
         else:
-            log.debug('Tuner is on a slave..creating new connection')
-            bs = self.connect(slaveBackend=tuner.getBackend().ipAddress)
+            log.debug('Tuner is on a subordinate..creating new connection')
+            bs = self.connect(subordinateBackend=tuner.getBackend().ipAddress)
             reply = self._sendRequest(bs, command)
             self._sendMsg(bs, ['DONE'])
             bs.shutdown(socket.SHUT_RDWR)
@@ -614,25 +614,25 @@ class Connection(object):
         msg.append('%d' % 640)
         msg.append('%d' % 360)
         
-        # if a slave backend, establish a new connection otherwise reuse existing connection to master backend.
+        # if a subordinate backend, establish a new connection otherwise reuse existing connection to main backend.
         backend = self.db().toBackend(backendHost)
         
         if backend is None:
             raise Exception('Backend hostname %s does not match any in db: %s' % (backendHost, self.db().getBackends()))
-        elif backend == self.master:
+        elif backend == self.main:
             reply = self._sendRequest(self.cmdSock, msg)
             result = self._isOk(reply)
         else:
             try:
-                s = self.connect(slaveBackend=backend.ipAddress)
+                s = self.connect(subordinateBackend=backend.ipAddress)
                 reply = self._sendRequest(s, msg)
                 result = self._isOk(reply)
                 s.shutdown(socket.SHUT_RDWR)
                 s.close()
             except socket.error, se:
-                if backend.slave:
-                    log.error('Slave down, rerouting to master')
-                    return self.generateThumbnail(program, self.db().getMasterBackend().ipAddress, width, height)
+                if backend.subordinate:
+                    log.error('Subordinate down, rerouting to main')
+                    return self.generateThumbnail(program, self.db().getMainBackend().ipAddress, width, height)
                 else:
                     raise
 
@@ -700,15 +700,15 @@ class Connection(object):
 #        msg.append('')  # trailing separator
         msg.insert(0, 'QUERY_PIXMAP_LASTMODIFIED')
 
-        # if a slave backend, establish a new connection otherwise reuse existing connection to master backend.
+        # if a subordinate backend, establish a new connection otherwise reuse existing connection to main backend.
         backend = self.db().toBackend(backendHost)
 
         if backend is None:
             raise Exception('Backend hostname %s does not match any in db: %s' % (backendHost, self.db().getBackends()))
-        elif backend == self.master:
+        elif backend == self.main:
             reply = self._sendRequest(self.cmdSock, msg)
         else: 
-            s = self.connect(slaveBackend=backend.ipAddress)
+            s = self.connect(subordinateBackend=backend.ipAddress)
             reply = self._sendRequest(s, msg)
             s.shutdown(socket.SHUT_RDWR)
             s.close()
@@ -930,7 +930,7 @@ class Connection(object):
     def getDiskUsage(self):
         """
         @rtype: dict with keys: hostname, dir, total, used, free (numbers are ints)
-        @return: Disk usage stats for master backend only. Numbers are ints in units of byte.
+        @return: Disk usage stats for main backend only. Numbers are ints in units of byte.
         @todo: Update so support multiple storage groups. For now, just return the stats on the first storage group
         """
         reply = self._sendRequest(self.cmdSock, ['QUERY_FREE_SPACE'])
@@ -1072,7 +1072,7 @@ class Connection(object):
         
         @param backendPath: myth url to file. Ex: myth://<host>:<port>/<path>
         @param destPath: path of destination file on the local filesystem. Ex: /tmp/somefile.mpg
-        @param backendHost: The backend that recorded the file. When None, defaults to master backend
+        @param backendHost: The backend that recorded the file. When None, defaults to main backend
         @param max: Max number of bytes to transfer. None == unlimited
         @rtype: bool
         """
@@ -1080,24 +1080,24 @@ class Connection(object):
         closeCommandSocket = False
         
         if backendHost ==  None:
-            backendHost = self.master.ipAddress
-            log.debug('Backend null, so requesting file from master backend: %s' % backendHost)    
+            backendHost = self.main.ipAddress
+            log.debug('Backend null, so requesting file from main backend: %s' % backendHost)    
         
         backend = self.db().toBackend(backendHost)
         
-        # Don't reuse cmd sock if we're requesting a file from a slave backend
+        # Don't reuse cmd sock if we're requesting a file from a subordinate backend
         if backend is None:
             raise Exception, 'Cannot map backendHost %s to backends in db: %s' % (backendHost, self.db().getBackends())
-        elif backend == self.master:
+        elif backend == self.main:
             commandSocket = self.cmdSock
         else:
-            log.debug('Requesting file from slave backend: %s' % backend.ipAddress)
+            log.debug('Requesting file from subordinate backend: %s' % backend.ipAddress)
             try:
-                commandSocket = self.connect(announce='Playback', slaveBackend=backend.ipAddress)
+                commandSocket = self.connect(announce='Playback', subordinateBackend=backend.ipAddress)
             except socket.error, se:
-                if backend.slave:
-                    log.error('XXX slave %s is not available...trying master' % backend)
-                    return self.transferFile(backendPath, destPath, self.db().getMasterBackend().ipAddress, numBytes)
+                if backend.subordinate:
+                    log.error('XXX subordinate %s is not available...trying main' % backend)
+                    return self.transferFile(backendPath, destPath, self.db().getMainBackend().ipAddress, numBytes)
             closeCommandSocket = True 
          
         reply,dataSocket = self.annFileTransfer(backend.hostname, backendPath)
@@ -1242,7 +1242,7 @@ class Connection(object):
 
 
 class EventConnection(Connection):
-    '''Strictly for reading system events from the master backend'''
+    '''Strictly for reading system events from the main backend'''
      
     def __init__(self, *args, **kwargs):
         Connection.__init__(self, *args, **kwargs)
@@ -1250,7 +1250,7 @@ class EventConnection(Connection):
     def connect(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(None)
-        s.connect((self.master.ipAddress, self.master.port))
+        s.connect((self.main.ipAddress, self.main.port))
         if not protocol.serverVersion:
             protocol.serverVersion = self.getServerVersion()
         
@@ -1284,7 +1284,7 @@ class OfflineConnection(Connection):
     def __init__(self, settings, translator, platform, bus, db=None):
         pass
 
-    def connect(self, announce='Playback', slaveBackend=None):
+    def connect(self, announce='Playback', subordinateBackend=None):
         pass
 
     def getServerVersion(self):
